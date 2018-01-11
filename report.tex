@@ -285,20 +285,18 @@ val sparkVer = "2.1.0"
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVer,
   "org.apache.spark" %% "spark-sql" % sparkVer,
-  // hhttps://mvnrepository.com/artifact/org.apache.spark/spark-mlib
   "org.apache.spark" %% "spark-mllib" % sparkVer,
   "com.github.fommil.netlib" % "all" % "1.1.2" pomOnly()
 )
 \end{lstlisting}
-\section{HDFS file System using Hadoop}
-To correctly run the recommender we used the HDFS file system Hadoop, where we uploaded the dataset to analyse and wrote in the recommender code where to take the data from.
+\section{HDFS File System using Hadoop}
+To correctly run the recommender we used the HDFS file system offered by Apache Hadoop.
+Here we uploaded the dataset we have to analyse and we wrote in the recommender code where to take the data from with the syntax \textit{hdfs://host\_name:port/path/of/dataset}.
 
 The whole code then has been executed in the IntelliJ IDE and the recommender gave a few suggestions for the selected user.
 
-%%%%%%%%%%%%%%%% Mettere immagine risultati recommender
-
 \section{Docker containers configuration}
-For the implementation in Docker we created a $Docker-Compose$ file in which we listed the two images for Hadoop and Spark. The code contained in the file is listed here:
+For the implementation in Docker we created a $Docker ~Compose$ file in which we listed the two services for Hadoop and Spark. The code contained in the file is listed here:
 
 \begin{lstlisting}[style=myBashstyle]
 version: '2'
@@ -323,9 +321,12 @@ services:
     command: bash -c "/etc/bootstrap.sh -bash && /shared/db_setup.sh"
 \end{lstlisting}
 
-As it can be seen from the code, we first declared the Spark image and the ports through which make the container available. We also created a directory which is in common between the two containers, in order to upload the dataset only in one place and offer an environment in which the containers could share files without problems. The same settings have been modelled for Hadoop.
+As it can be seen from the code, we first declared the Spark service and the ports through which make the container available.
 
-An important part in the yml file is the definition of the command files $spark\_setup.sh$ and $db\_setup.sh$. During the first attempts with the code we incurred in some problems regarding the order of execution of the images: we noticed that sometimes the program was crushing due to the fact the Spark container started to run before Hadoop was able to fully set the connection and the dataset. So we wrote:
+The first thing that Docker Compose does, if not already done, is to pull the images of both the containers used in the services. 
+We also created a directory which is in common between the two containers, in order to upload the dataset only in one place and offer an environment in which the containers could share files without problems. The same settings have been modelled for Hadoop.
+
+An important part in the yml file is the definition of the command files $spark\_setup.sh$ and $db\_setup.sh$. During the first attempts with the code we incurred in some problems regarding the order of execution of the services: we noticed that sometimes the program was crashing due to the fact that Spark required the dataset before Hadoop was able to fully set the connection to it. So we wrote:
 \begin{itemize}
 \item \textbf{spark\_setup.sh}
 \end{itemize}
@@ -395,12 +396,25 @@ do
     sleep 1
 done
 \end{lstlisting}
-In the $spark\_setup$ we said to Spark to wait until Hadoop is ready (it will understand when this moment comes checking the existence of $ready.txt$ file in the shared directory), at the same time the file \textit{Docker Compose} is pulling the Hadoop image. When the Hadoop image is ready, the file $db\_setup$ executes: the first thing it does is to check if the dataset is already added, if not so it is uploaded. When every file is ready, Hadoop creates the file $ready.txt$ setting its user permission to 777 mode so as to be possible for the Spark container to read it and delete it after.
+In the $spark\_setup$ we said to Spark to wait until Hadoop is ready (it will understand when this moment comes checking the existence of $ready.txt$ file in the shared directory), at the same time the file \textit{Docker Compose} starts the Hadoop service and the correspondent container. When the Hadoop container is ready, the file $db\_setup$ executes: the first thing it does is to check if the dataset is already added, if not so, it is uploaded. When every file is ready, Hadoop creates the file $ready.txt$ setting its user permission to 777 mode (everyone has full access to the file) so as to be possible for the Spark service to read it and delete it after.
 
-After the file creation Hadoop enters a sort of "listening" mode in which it waits for the Spark container to run the recommender and finally produce an $end.txt$ file.
-So, while Hadoop is waiting, Spark detects the existence of $ready.txt$, it deletes it and runs the recommender. After that it returns the output, produces the $end.txt$ file with, again, 777 permissions and stops.
+After the file creation, Hadoop enters a sort of \textit{listening} mode, in which it waits for the Spark container to run the recommender, and finally produces an $end.txt$ file.
+So, while Hadoop is waiting, Spark detects the existence of $ready.txt$, it deletes it and runs the recommender. Once the recommender finished its tasks, the Spark service produces the $end.txt$ file with, again, 777 permissions and stops.
 
 At this point Hadoop detects the $end.txt$ file and stops too.
 
-%%%%%%%%%%%%%%%%%% MEttere immagine risultati terminale
+An example of execution is shown in \autoref{fig:execution}.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}[b]{.45\textwidth}
+        \includegraphics[width=\textwidth]{Screenshot(120).png}
+    \end{subfigure}
+		\hspace{0.5cm}
+		\begin{subfigure}[b]{.45\textwidth}
+				\includegraphics[width=\textwidth]{Screenshot(119).png}
+		\end{subfigure}
+		\caption{Example of execution of the Recommender using Docker Compose}
+		\label{fig:execution}
+\end{figure}
 \end{document}

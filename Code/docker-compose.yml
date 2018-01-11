@@ -1,0 +1,20 @@
+version: '2'
+services:
+  spark:
+    image: "p7hb/docker-spark:2.1.0"
+    container_name: spark
+    volumes:
+      - ./shared:/shared
+    ports:
+      - 4040:4040
+      - 8080:8080
+      - 8081:8081
+    command: bash -c "/shared/spark_setup.sh"
+  hadoop:
+    image: "sequenceiq/hadoop-docker:2.7.1"
+    container_name: hadoop
+    volumes:
+      - ./shared:/shared
+    ports:
+      - 9000:9000
+    command: bash -c "/etc/bootstrap.sh -bash && /shared/db_setup.sh"
