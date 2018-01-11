@@ -44,6 +44,7 @@
 % "define" Scala
 \usepackage{listings}
 \usepackage{xcolor}
+\lstset{escapeinside={<@}{@>}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -52,8 +53,8 @@
 \definecolor{cri2}{HTML}{FF006E}
 \definecolor{cri3}{HTML}{0008FF}
 \definecolor{cri4}{HTML}{00A9FF}
-\definecolor{cri5}{HTML}{51FFB9}
-\definecolor{cri6}{HTML}{FFA100}
+\definecolor{cri5}{HTML}{55CF7D}
+\definecolor{cri6}{HTML}{FFAF1C}
 
 \lstdefinestyle{myScalastyle}{
   frame=tb,
@@ -74,14 +75,39 @@
   tabsize=3,
 }
 
-\lstset{basicstyle=\ttfamily,
+\lstdefinestyle{myBashstyle}{
   frame=tb,
+  language=bash,
   aboveskip=3mm,
   belowskip=3mm,
   showstringspaces=false,
-  commentstyle=\color{cri1},
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
   keywordstyle=\color{cri2},
+  commentstyle=\color{cri1},
+  stringstyle=\color{cri6},
+  % <@\textcolor{cri5}{'Ziggy is running the Recommender...'}@>
+  % <@\textcolor{cri5}{'Adding dataset to Hadoop...'}@>
+  % <@\textcolor{cri5}{'Creating directory...'}@>
+  % <@\textcolor{cri5}{'Adding user_artist_data.txt...'}@>
+  % <@\textcolor{cri5}{'Adding artist_data.txt...'}@>
+  % <@\textcolor{cri5}{'Adding artist_alias.txt...'}@>
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3,
 }
+
+% \lstset{basicstyle=\ttfamily,
+%   frame=tb,
+%   aboveskip=3mm,
+%   belowskip=3mm,
+%   showstringspaces=false,
+%   commentstyle=\color{cri1},
+%   keywordstyle=\color{cri2},
+% }
 
 % \lstdefinelanguage{JavaScript}{
 %   keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
@@ -247,7 +273,7 @@ object RunRecommender {
 \section{SBT dependencies}
 The dependencies for the Recommender have been managed through the $build.sbt$ file, here shown below.
 
-\begin{lstlisting}
+\begin{lstlisting}[style=myScalastyle]
 name := "RecommenderSBT"
 
 version := "0.1"
@@ -274,7 +300,7 @@ The whole code then has been executed in the IntelliJ IDE and the recommender ga
 \section{Docker containers configuration}
 For the implementation in Docker we created a $Docker-Compose$ file in which we listed the two images for Hadoop and Spark. The code contained in the file is listed here:
 
-\begin{lstlisting}
+\begin{lstlisting}[style=myBashstyle]
 version: '2'
 services:
   spark:
@@ -303,8 +329,8 @@ An important part in the yml file is the definition of the command files $spark\
 \begin{itemize}
 \item \textbf{spark\_setup.sh}
 \end{itemize}
-\begin{lstlisting}[language=bash]
-/bin/echo 'Welcome in Ziggy, the new generation of Recommender!!'
+\begin{lstlisting}[style=myBashstyle]
+/bin/echo <@\textcolor{cri5}{'Welcome in Ziggy, the new generation of Recommender!!'}@>
 /bin/echo '
 
 #I keep Spark sleeping until Hadoop is not ready
@@ -317,15 +343,15 @@ rm -rf /shared/ready.txt
 
 #then I start the Recommender
 
-/bin/echo 'Ziggy is running the Recommender...'
+/bin/echo <@\textcolor{cri5}{'Ziggy is running the Recommender...'}@>
 spark-submit --class com.cloudera.datascience.recommender.RunRecommender /shared/recommender_2.11-0.1.jar 2093760
 \end{lstlisting}
 and
 \begin{itemize}
 \item \textbf{db\_setup.sh}
 \end{itemize}
-\begin{lstlisting}[language=bash]
-/bin/echo 'Adding dataset to Hadoop...'
+\begin{lstlisting}[style=myBashstyle]
+/bin/echo <@\textcolor{cri5}{'Adding dataset to Hadoop...'}@>
 
 #Adding Hadoop to PATH
 PATH="$PATH:/usr/local/hadoop/bin"
@@ -336,28 +362,28 @@ hdfs dfsadmin -safemode leave
 hadoop fs -test -e /user/ds
 if [ $? != 0 ]
 then
-    /bin/echo 'Creating directory...'
+    /bin/echo <@\textcolor{cri5}{reating directory...'}@>
     hadoop fs -mkdir /user/ds
 fi
 
 hadoop fs -test -e /user/ds/user_artist_data.txt
 if [ $? != 0 ]
 then
-    /bin/echo 'Adding user_artist_data.txt...'
+    /bin/echo <@\textcolor{cri5}'<{dding user\_artist\_data.txt...'}@>
     hadoop fs -put /shared/user_artist_data.txt /user/ds/user_artist_data.txt
 fi
 
 hadoop fs -test -e /user/ds/artist_data_filtered.txt
 if [ $? != 0 ]
 then
-    /bin/echo 'Adding artist_data.txt...'
+    /bin/echo <@\textcolor{cri5}{'Adding artist\_data.txt...'}@>
     hadoop fs -put /shared/artist_data_filtered.txt /user/ds/artist_data_filtered.txt
 fi
 
 hadoop fs -test -e /user/ds/artist_alias.txt
 if [ $? != 0 ]
 then
-    /bin/echo 'Adding artist_alias.txt...'
+    /bin/echo <@\textcolor{cri5}{'Adding artist\_alias.txt...'}@>
     hadoop fs -put /shared/artist_alias.txt /user/ds/artist_alias.txt
 fi
 
