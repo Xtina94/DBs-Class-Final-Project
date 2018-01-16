@@ -323,7 +323,7 @@ services:
 
 As it can be seen from the code, we first declared the Spark service and the ports through which make the container available.
 
-The first thing that Docker Compose does, if not already done, is to pull the images of both the containers used in the services. 
+The first thing that Docker Compose does, if not already done, is to pull the images of both the containers used in the services.
 We also created a directory which is in common between the two containers, in order to upload the dataset only in one place and offer an environment in which the containers could share files without problems. The same settings have been modelled for Hadoop.
 
 An important part in the yml file is the definition of the command files $spark\_setup.sh$ and $db\_setup.sh$. During the first attempts with the code we incurred in some problems regarding the order of execution of the services: we noticed that sometimes the program was crashing due to the fact that Spark required the dataset before Hadoop was able to fully set the connection to it. So we wrote:
@@ -403,18 +403,31 @@ So, while Hadoop is waiting, Spark detects the existence of $ready.txt$, it dele
 
 At this point Hadoop detects the $end.txt$ file and stops too.
 
-An example of execution is shown in \autoref{fig:execution}.
+An example of execution is shown in \autoref{fig:execution1} and \autoref{fig:execution2}.
 
+% \begin{figure}[ht]
+%     \centering
+%     \begin{subfigure}[b]{.45\textwidth}
+%         \includegraphics[width=\textwidth]{Screenshot(120).png}
+%     \end{subfigure}
+% 		\hspace{0.5cm}
+% 		\begin{subfigure}[b]{.45\textwidth}
+% 				\includegraphics[width=\textwidth]{Screenshot(119).png}
+% 		\end{subfigure}
+% 		\caption{Example of execution of the Recommender using Docker Compose}
+% 		\label{fig:execution}
+% \end{figure}
+\newpage
 \begin{figure}[ht]
     \centering
-    \begin{subfigure}[b]{.45\textwidth}
-        \includegraphics[width=\textwidth]{Screenshot(120).png}
-    \end{subfigure}
-		\hspace{0.5cm}
-		\begin{subfigure}[b]{.45\textwidth}
-				\includegraphics[width=\textwidth]{Screenshot(119).png}
-		\end{subfigure}
-		\caption{Example of execution of the Recommender using Docker Compose}
-		\label{fig:execution}
+        \includegraphics[width=0.8\textwidth]{Screenshot(120).png}
+        \caption{Example of execution of the Recommender using Docker Compose}
+        \label{fig:execution1}
+\end{figure}
+\begin{figure}[ht]
+    \centering
+				\includegraphics[width=0.8\textwidth]{Screenshot(119).png}
+		      \caption{Example of execution of the Recommender using Docker Compose}
+		        \label{fig:execution2}
 \end{figure}
 \end{document}
